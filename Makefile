@@ -5,50 +5,69 @@
 #                                                     +:+ +:+         +:+      #
 #    By: amontano <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2018/04/16 21:04:13 by amontano          #+#    #+#              #
-#    Updated: 2018/06/27 02:26:29 by amontano         ###   ########.fr        #
+#    Created: 2018/06/25 03:44:24 by amontano          #+#    #+#              #
+#    Updated: 2018/07/10 01:47:25 by amontano         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-NAME = libft.a
+NAME = fdf
 CC = gcc
-CFLAGS = -Wall -Werror -Wextra -std=c99
-SOURCE = ft_strjoin.c ft_putnbr_fd.c ft_putendl_fd.c ft_putendl.c \
-		 ft_putstr_fd.c ft_putchar_fd.c ft_putnbr.c ft_strsplit.c \
-		 ft_strtrim.c ft_strsub.c ft_strnequ.c ft_strequ.c ft_strmapi.c \
-		 ft_strmap.c ft_striteri.c ft_striter.c ft_strdel.c ft_strclr.c \
-		 ft_memalloc.c ft_memcpy.c ft_memccpy.c ft_memchr.c ft_memcmp.c \
-		 ft_memcpy.c ft_memdel.c ft_memmove.c ft_memset.c ft_putchar.c \
-		 ft_putstr.c ft_strlen.c ft_isupper.c ft_islower.c ft_isalpha.c \
-		 ft_isdigit.c ft_isalnum.c ft_isascii.c ft_isprint.c ft_tolower.c \
-		 ft_toupper.c ft_atoi.c ft_itoa.c ft_iswhitespace.c ft_strdup.c \
-		 ft_strndup.c ft_strcpy.c ft_strncpy.c ft_strcmp.c ft_strncmp.c \
-		 ft_strchr.c ft_strrchr.c ft_strstr.c ft_strnstr.c ft_strcat.c \
-		 ft_strncat.c ft_strlcat.c ft_strnew.c ft_bzero.c ft_lstadd.c \
-		 ft_lstmap.c ft_lstiter.c ft_lstdelone.c ft_lstdel.c ft_lstnew.c \
-		 ft_wordcount.c ft_strcapitalize.c get_next_line.c ft_strjoin.c \
-		 ft_lstrev.c ft_lstcount.c ft_abs.c ft_wordcount_d.c \
-		 ft_listaddend.c \
+CFLAGS = -Wall -Werror -Wextra -g
 
-SRC_PATH = src/
-SRC_POS = $(addprefix $(SRC_PATH), $(SOURCE))
-OBJ = $(SRC_POS:.c=.o)
+SRC = main.c		\
+	  read.c		\
+	  draw.c		\
+	  util.c		\
+	  img.c			\
+	  interpolate.c	\
+	  transform.c	\
+	  mouse.c		\
+	  keyboard.c	\
 
-all : $(NAME)
+OBJ = $(addprefix $(OBJ_DIR), $(SRC:.c=.o))
+OBJ_DIR = obj/
+
+MLX_PATH = minilibx_macos/
+MLX = $(addprefix $(MLX_PATH), mlx.a)
+MLX_DIR = -I ./minilibx_macos/
+MLX_LNK = -L ./minilibx_macos/ -lmlx -framework OpenGL -framework AppKit
+
+FT = libft/
+LIBFT = $(addprefix $(FT), libft.a)
+FT_DIR = -I ./libft/src/
+FT_LNK = -L ./libft/ -lft
+
+SRC_DIR = ./src/
+INC_DIR = ./includes/
+OBJ_DIR = ./obj/
+
+all: obj $(LIBFT) $(MLX_DIR) $(NAME)
+
+obj:
+	mkdir -p $(OBJ_DIR)
+
+$(OBJ_DIR)%.o:$(SRC_DIR)%.c
+	$(CC) $(CFLAGS) $(MLX_INC) $(FT_DIR) -I $(INC_DIR) -o $@ -c $<
+
+$(LIBFT):
+	make -C $(FT)
+
+$(MLX_DIR):
+	make -C $(MLX_PATH)
 
 $(NAME): $(OBJ)
-	@ar rc $(NAME) $(OBJ)
-	@ranlib $(NAME)
-
-%.o : $.c
-	@$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(OBJ) $(MLX_LNK) $(FT_LNK)  -o $(NAME)
 
 clean:
-	@rm -f $(OBJ)
+	rm -rf $(OBJ_DIR)
+	make -C $(FT) clean
+	make -C $(MLX_PATH) clean
 
 fclean: clean
-	@rm -f $(NAME)
+	rm -rf $(NAME)
+	make -C $(FT) fclean
 
 re: fclean all
 
-.PHONY: all, clean, fclean, re
+.PHONY: all clean fclean re
+
